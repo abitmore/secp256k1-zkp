@@ -24,6 +24,8 @@ static void secp256k1_nonce_function_dleq_sha256_tagged(secp256k1_sha256 *sha) {
 /* algo argument for nonce_function_ecdsa_adaptor to derive the nonce using a tagged hash function. */
 static const unsigned char dleq_algo[] = {'D','L','E','Q'};
 
+static int nonce_function_ecdsa_adaptor_impl(const secp256k1_hash_ctx *hash_ctx, unsigned char *nonce32, const unsigned char *msg32, const unsigned char *key32, const unsigned char *pk33, const unsigned char *algo, size_t algolen, void *data);
+
 static void secp256k1_dleq_hash_point(const secp256k1_hash_ctx *hash_ctx, secp256k1_sha256 *sha, secp256k1_ge *p) {
     unsigned char buf[33];
 
@@ -36,20 +38,21 @@ static int secp256k1_dleq_nonce(const secp256k1_hash_ctx *hash_ctx, secp256k1_sc
     unsigned char buf[32];
     unsigned char nonce[32];
 
-    if (noncefp == NULL) {
-        noncefp = secp256k1_nonce_function_ecdsa_adaptor;
-    }
-
     secp256k1_sha256_initialize(&sha);
     secp256k1_sha256_write(hash_ctx, &sha, p1_33, 33);
     secp256k1_sha256_write(hash_ctx, &sha, p2_33, 33);
     secp256k1_sha256_finalize(hash_ctx, &sha, buf);
     secp256k1_sha256_clear(&sha);
 
-    if (!noncefp(nonce, buf, sk32, gen2_33, dleq_algo, sizeof(dleq_algo), ndata)) {
+    if (noncefp == NULL || noncefp == secp256k1_nonce_function_ecdsa_adaptor) {
+        if (!nonce_function_ecdsa_adaptor_impl(hash_ctx, nonce, buf, sk32, gen2_33, dleq_algo, sizeof(dleq_algo), ndata)) {
+            return 0;
+        }
+    } else if (!noncefp(nonce, buf, sk32, gen2_33, dleq_algo, sizeof(dleq_algo), ndata)) {
         return 0;
     }
     secp256k1_scalar_set_b32(k, nonce, NULL);
+    secp256k1_memclear_explicit(nonce, sizeof(nonce));
     if (secp256k1_scalar_is_zero(k)) {
         return 0;
     }

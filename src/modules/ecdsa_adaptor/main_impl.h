@@ -150,6 +150,7 @@ static int nonce_function_ecdsa_adaptor(
 const secp256k1_nonce_function_hardened_ecdsa_adaptor secp256k1_nonce_function_ecdsa_adaptor = nonce_function_ecdsa_adaptor;
 
 int secp256k1_ecdsa_adaptor_encrypt(const secp256k1_context* ctx, unsigned char *adaptor_sig162, unsigned char *seckey32, const secp256k1_pubkey *enckey, const unsigned char *msg32, secp256k1_nonce_function_hardened_ecdsa_adaptor noncefp, void *ndata) {
+    const secp256k1_hash_ctx *hash_ctx;
     secp256k1_scalar k;
     secp256k1_ge r[2];               /* R, R' */
     secp256k1_gej rj[2];             /* R, R' */
@@ -175,16 +176,19 @@ int secp256k1_ecdsa_adaptor_encrypt(const secp256k1_context* ctx, unsigned char 
     secp256k1_scalar_clear(&dleq_proof_e);
     secp256k1_scalar_clear(&dleq_proof_s);
 
-    if (noncefp == NULL) {
-        noncefp = secp256k1_nonce_function_ecdsa_adaptor;
-    }
-
     if (!secp256k1_pubkey_load(ctx, &enckey_ge, enckey)) {
         return 0;
     }
 
+    hash_ctx = secp256k1_get_hash_context(ctx);
+
     secp256k1_eckey_pubkey_serialize33(&enckey_ge, buf33);
-    ret &= !!noncefp(nonce32, msg32, seckey32, buf33, ecdsa_adaptor_algo, sizeof(ecdsa_adaptor_algo), ndata);
+    if (noncefp == NULL || noncefp == secp256k1_nonce_function_ecdsa_adaptor) {
+        ret &= nonce_function_ecdsa_adaptor_impl(hash_ctx, nonce32, msg32, seckey32, buf33, ecdsa_adaptor_algo, sizeof(ecdsa_adaptor_algo), ndata);
+    } else {
+        ret &= !!noncefp(nonce32, msg32, seckey32, buf33, ecdsa_adaptor_algo, sizeof(ecdsa_adaptor_algo), ndata);
+    }
+
     secp256k1_scalar_set_b32(&k, nonce32, NULL);
     ret &= !secp256k1_scalar_is_zero(&k);
     secp256k1_scalar_cmov(&k, &secp256k1_scalar_one, !ret);
