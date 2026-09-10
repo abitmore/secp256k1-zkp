@@ -53,10 +53,8 @@ static int secp256k1_whitelist_compute_tweaked_privkey(const secp256k1_context* 
     secp256k1_scalar tweak;
     const secp256k1_hash_ctx *hash_ctx = &ctx->hash_ctx;
     int ret = 1;
-    int overflow = 0;
 
-    secp256k1_scalar_set_b32(skey, summed_key, &overflow);
-    if (overflow || secp256k1_scalar_is_zero(skey)) {
+    if (!secp256k1_scalar_set_b32_seckey(skey, summed_key)) {
         ret = 0;
     }
     if (ret) {
@@ -69,8 +67,7 @@ static int secp256k1_whitelist_compute_tweaked_privkey(const secp256k1_context* 
         secp256k1_scalar sonline;
         secp256k1_scalar_mul(skey, skey, &tweak);
 
-        secp256k1_scalar_set_b32(&sonline, online_key, &overflow);
-        if (overflow || secp256k1_scalar_is_zero(&sonline)) {
+        if (!secp256k1_scalar_set_b32_seckey(&sonline, online_key)) {
             ret = 0;
         }
         secp256k1_scalar_add(skey, skey, &sonline);

@@ -293,7 +293,6 @@ int secp256k1_ecdsa_adaptor_decrypt(const secp256k1_context* ctx, secp256k1_ecds
     secp256k1_scalar sp;
     secp256k1_scalar s;
     secp256k1_scalar sigr;
-    int overflow;
     int high;
     int ret = 1;
 
@@ -303,10 +302,8 @@ int secp256k1_ecdsa_adaptor_decrypt(const secp256k1_context* ctx, secp256k1_ecds
     ARG_CHECK(adaptor_sig162 != NULL);
 
     secp256k1_scalar_clear(&sp);
-    secp256k1_scalar_set_b32(&deckey, deckey32, &overflow);
-    ret &= !overflow;
+    ret &= secp256k1_scalar_set_b32_seckey(&deckey, deckey32);
     ret &= secp256k1_ecdsa_adaptor_sig_deserialize(NULL, &sigr, NULL, &sp, NULL, NULL, adaptor_sig162);
-    ret &= !secp256k1_scalar_is_zero(&deckey);
     secp256k1_scalar_inverse(&s, &deckey);
     /* s = s' * y⁻¹ */
     secp256k1_scalar_mul(&s, &s, &sp);
