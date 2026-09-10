@@ -55,7 +55,7 @@ void test_schnorrsig_aggregate_internal(void) {
     CHECK(secp256k1_schnorrsig_aggverify(CTX, pubkeys, msgs32, n_initial, aggsig, aggsig_len));
     /* Aggregate the remaining n_new many signatures to the already existing ones */
     aggsig_len = sizeof(aggsig);
-    secp256k1_schnorrsig_inc_aggregate(CTX, aggsig, &aggsig_len, pubkeys, msgs32, &sigs64[n_initial*64], n_initial, n_new);
+    CHECK(secp256k1_schnorrsig_inc_aggregate(CTX, aggsig, &aggsig_len, pubkeys, msgs32, &sigs64[n_initial*64], n_initial, n_new) == 1);
     /* Make sure that the aggregate signature verifies */
     CHECK(aggsig_len == 32*(n + 1));
     CHECK(secp256k1_schnorrsig_aggverify(CTX, pubkeys, msgs32, n, aggsig, aggsig_len));

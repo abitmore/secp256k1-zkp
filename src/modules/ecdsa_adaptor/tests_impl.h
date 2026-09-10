@@ -1086,11 +1086,11 @@ static void multi_hop_lock_tests_internal(void) {
     rand_scalar(&t2);
     secp256k1_scalar_add(&tp, &t1, &t2);
     /* Left lock */
-    secp256k1_pubkey_load(CTX, &l_ge, &pubkey_pop);
+    CHECK(secp256k1_pubkey_load(CTX, &l_ge, &pubkey_pop) == 1);
     CHECK(secp256k1_eckey_pubkey_tweak_add(&l_ge, &t1));
     secp256k1_pubkey_save(&l, &l_ge);
     /* Right lock */
-    secp256k1_pubkey_load(CTX, &r_ge, &pubkey_pop);
+    CHECK(secp256k1_pubkey_load(CTX, &r_ge, &pubkey_pop) == 1);
     CHECK(secp256k1_eckey_pubkey_tweak_add(&r_ge, &tp));
     secp256k1_pubkey_save(&r, &r_ge);
     CHECK(secp256k1_ecdsa_adaptor_encrypt(CTX, asig_ab, seckey_a, &l, tx_ab, NULL, NULL));
