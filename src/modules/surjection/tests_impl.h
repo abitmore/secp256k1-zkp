@@ -395,7 +395,7 @@ static void test_gen_verify(size_t n_inputs, size_t n_used) {
 
 /* check that a proof with empty n_used_inputs is invalid */
 static void test_no_used_inputs_verify(void) {
-    const secp256k1_hash_ctx *hash_ctx = secp256k1_get_hash_context(CTX);
+    const secp256k1_hash_ctx *hash_ctx = &CTX->hash_ctx;
     secp256k1_surjectionproof proof;
     secp256k1_fixed_asset_tag fixed_input_tag;
     secp256k1_fixed_asset_tag fixed_output_tag;
@@ -667,7 +667,7 @@ static int surjection_genrand_stream_all_differ(const secp256k1_scalar *a, const
  * secp256k1_surjectionproof_generate changes every s-value produced by
  * secp256k1_surjection_genrand. */
 static void test_surjection_genrand(void) {
-    const secp256k1_hash_ctx *hash_ctx = secp256k1_get_hash_context(CTX);
+    const secp256k1_hash_ctx *hash_ctx = &CTX->hash_ctx;
     const size_t ns = 4;
     const size_t n_inputs = 5;
     unsigned char msg_a[32];

@@ -386,7 +386,7 @@ static void bench_sha256(void* arg, int iters) {
     int i;
     bench_inv *data = (bench_inv*)arg;
     secp256k1_sha256 sha;
-    const secp256k1_hash_ctx *hash_ctx = secp256k1_get_hash_context(data->ctx);
+    const secp256k1_hash_ctx *hash_ctx = &data->ctx->hash_ctx;
 
     for (i = 0; i < iters; i++) {
         secp256k1_sha256_initialize(&sha);
@@ -399,7 +399,7 @@ static void bench_hmac_sha256(void* arg, int iters) {
     int i;
     bench_inv *data = (bench_inv*)arg;
     secp256k1_hmac_sha256 hmac;
-    const secp256k1_hash_ctx *hash_ctx = secp256k1_get_hash_context(data->ctx);
+    const secp256k1_hash_ctx *hash_ctx = &data->ctx->hash_ctx;
 
     for (i = 0; i < iters; i++) {
         secp256k1_hmac_sha256_initialize(hash_ctx, &hmac, data->data, 32);
@@ -412,7 +412,7 @@ static void bench_rfc6979_hmac_sha256(void* arg, int iters) {
     int i;
     bench_inv *data = (bench_inv*)arg;
     secp256k1_rfc6979_hmac_sha256 rng;
-    const secp256k1_hash_ctx *hash_ctx = secp256k1_get_hash_context(data->ctx);
+    const secp256k1_hash_ctx *hash_ctx = &data->ctx->hash_ctx;
 
     for (i = 0; i < iters; i++) {
         secp256k1_rfc6979_hmac_sha256_initialize(hash_ctx, &rng, data->data, 64);

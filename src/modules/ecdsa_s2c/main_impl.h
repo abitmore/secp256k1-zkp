@@ -55,7 +55,7 @@ static void secp256k1_s2c_ecdsa_data_sha256_tagged(secp256k1_sha256 *sha) {
 
 int secp256k1_ecdsa_s2c_sign(const secp256k1_context* ctx, secp256k1_ecdsa_signature* signature, secp256k1_ecdsa_s2c_opening* s2c_opening, const unsigned char
  *msg32, const unsigned char *seckey, const unsigned char* s2c_data32) {
-    const secp256k1_hash_ctx *hash_ctx = secp256k1_get_hash_context(ctx);
+    const secp256k1_hash_ctx *hash_ctx = &ctx->hash_ctx;
     secp256k1_scalar r, s;
     int ret;
     unsigned char ndata[32];
@@ -86,7 +86,7 @@ int secp256k1_ecdsa_s2c_sign(const secp256k1_context* ctx, secp256k1_ecdsa_signa
 }
 
 int secp256k1_ecdsa_s2c_verify_commit(const secp256k1_context* ctx, const secp256k1_ecdsa_signature* sig, const unsigned char* data32, const secp256k1_ecdsa_s2c_opening* opening) {
-    const secp256k1_hash_ctx *hash_ctx = secp256k1_get_hash_context(ctx);
+    const secp256k1_hash_ctx *hash_ctx = &ctx->hash_ctx;
     secp256k1_ge commitment_ge;
     secp256k1_ge original_pubnonce_ge;
     unsigned char x_bytes[32];
@@ -130,7 +130,7 @@ int secp256k1_ecdsa_s2c_verify_commit(const secp256k1_context* ctx, const secp25
 /*** anti-exfil ***/
 int secp256k1_ecdsa_anti_exfil_host_commit(const secp256k1_context* ctx, unsigned char* rand_commitment32, const unsigned char* rand32) {
     secp256k1_sha256 sha;
-    const secp256k1_hash_ctx *hash_ctx = secp256k1_get_hash_context(ctx);
+    const secp256k1_hash_ctx *hash_ctx = &ctx->hash_ctx;
 
     VERIFY_CHECK(ctx != NULL);
     ARG_CHECK(rand_commitment32 != NULL);
@@ -160,7 +160,7 @@ int secp256k1_ecdsa_anti_exfil_signer_commit(const secp256k1_context* ctx, secp2
     memset(nonce32, 0, 32);
     while (!is_nonce_valid) {
         /* cast to void* removes const qualifier, but nonce_function_rfc6979_impl does not modify it */
-        if (!nonce_function_rfc6979_impl(secp256k1_get_hash_context(ctx), nonce32, msg32, seckey32, NULL, (void*)rand_commitment32, count)) {
+        if (!nonce_function_rfc6979_impl(&ctx->hash_ctx, nonce32, msg32, seckey32, NULL, (void*)rand_commitment32, count)) {
             secp256k1_callback_call(&ctx->error_callback, "(cryptographically unreachable) generated bad nonce");
         }
         is_nonce_valid = secp256k1_scalar_set_b32_seckey(&k, nonce32);

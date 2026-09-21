@@ -11,7 +11,7 @@
 #include "../../unit_test.h"
 
 static void test_ecdsa_s2c_tagged_hash(void) {
-    const secp256k1_hash_ctx *hash_ctx = secp256k1_get_hash_context(CTX);
+    const secp256k1_hash_ctx *hash_ctx = &CTX->hash_ctx;
     unsigned char tag_data[] = {'s', '2', 'c', '/', 'e', 'c', 'd', 's', 'a', '/', 'd', 'a', 't', 'a'};
     unsigned char tag_point[] = {'s', '2', 'c', '/', 'e', 'c', 'd', 's', 'a', '/', 'p', 'o', 'i', 'n', 't'};
     secp256k1_sha256 sha;

@@ -10,12 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+#### Fixed
+ - Module `silentpayments`: `secp256k1_silentpayments_sender_create_outputs` and `secp256k1_silentpayments_recipient_prevouts_summary_create` no longer require empty key arrays to be passed as `NULL`. If the corresponding size argument is 0, the array pointer is ignored. This matches the API documentation, which only states that unused arrays *can* be `NULL`, and spares callers from special-casing empty arrays.
+
+## [0.8.0] - 2026-08-03
+
 #### Added
  - New function `secp256k1_context_set_sha256_compression` for overriding the internal SHA256 compression function used by the library at runtime (e.g., to route SHA256 through a hardware-accelerated implementation).
  - New module `silentpayments` implements sending and receiving of Silent Payments according to [BIP 352](https://github.com/bitcoin/bips/blob/master/bip-0352.mediawiki). See:
    - Header file `include/secp256k1_silentpayments.h` which defines the new API.
    - Usage example `examples/silentpayments.c`.
  - The `silentpayments` API currently requires full access to the transaction data (light client scanning is not implemented).
+
+#### Fixed
+ - Module `ellswift`: `secp256k1_ellswift_xdh` now treats secret keys greater than or equal to the curve order as invalid and returns 0 as documented. Previously, keys greater than the curve order were silently reduced modulo the order and accepted. The probability that a securely generated key is greater than the curve order is negligible, and thus the old behavior does not constitute a security issue.
 
 #### Changed
  - The field multiplication and squaring routines of the 5x52 (64-bit) implementation are now force-inlined. This speeds up many library functions with GCC and MSVC (Clang is largely unaffected), e.g. `secp256k1_ecdsa_verify` and `secp256k1_schnorrsig_verify` by up to ~11%, at the cost of a somewhat larger compiled library. Force-inlining is disabled in unoptimized builds and when optimizing for size.
@@ -24,7 +32,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Removed
 - Removed previously deprecated pointer `secp256k1_context_no_precomp`. Use `secp256k1_context_static` instead.
 - Removed previously deprecated function alias `secp256k1_schnorrsig_sign`. Use `secp256k1_schnorrsig_sign32` instead.
-- Removed macro SECP256K1_GNUC_PREREQ defined in the header file `include/secp256k1.h`. This macro was used in the library headers to check for GNU C extensions. The macro was not actually meant to be part of the public API of libsecp256k1. If you happened to use it in your code nevertheless, use the macros `__GNUC__` and `__GNUC_MINOR__` (defined by compilers with GNU C extensions) directly, or copy the macro definition from an old libsecp256k1 header file into your code.
+- Removed macro `SECP256K1_GNUC_PREREQ` defined in the header file `include/secp256k1.h`. This macro was used in the library headers to check for GNU C extensions. The macro was not actually meant to be part of the public API of libsecp256k1. If you happened to use it in your code nevertheless, use the macros `__GNUC__` and `__GNUC_MINOR__` (defined by compilers with GNU C extensions) directly, or copy the macro definition from an old libsecp256k1 header file into your code.
+
+#### ABI Compatibility
+The symbols `secp256k1_context_no_precomp` and `secp256k1_schnorrsig_sign` were removed.
+Otherwise, the library maintains backward compatibility with versions 0.7.0 and 0.7.1.
 
 ## [0.7.1] - 2026-01-26
 
@@ -219,7 +231,8 @@ This version was in fact never released.
 The number was given by the build system since the introduction of autotools in Jan 2014 (ea0fe5a5bf0c04f9cc955b2966b614f5f378c6f6).
 Therefore, this version number does not uniquely identify a set of source files.
 
-[Unreleased]: https://github.com/bitcoin-core/secp256k1/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/bitcoin-core/secp256k1/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/bitcoin-core/secp256k1/compare/v0.7.1...v0.8.0
 [0.7.1]: https://github.com/bitcoin-core/secp256k1/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/bitcoin-core/secp256k1/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/bitcoin-core/secp256k1/compare/v0.5.1...v0.6.0

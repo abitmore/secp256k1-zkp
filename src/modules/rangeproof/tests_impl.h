@@ -123,7 +123,7 @@ static void test_rangeproof_api_internal(void) {
 }
 
 static void test_borromean_internal(void) {
-    const secp256k1_hash_ctx *hash_ctx = secp256k1_get_hash_context(CTX);
+    const secp256k1_hash_ctx *hash_ctx = &CTX->hash_ctx;
     unsigned char e0[32];
     secp256k1_scalar s[64];
     secp256k1_gej pubs[64];

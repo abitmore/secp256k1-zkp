@@ -11,7 +11,7 @@
 void test_schnorrsig_sha256_tagged_aggregate(void) {
     static const unsigned char tag[] = {'H', 'a', 'l', 'f', 'A', 'g', 'g', '/', 'r', 'a', 'n', 'd', 'o', 'm', 'i', 'z', 'e', 'r'};
     secp256k1_sha256 sha_optimized;
-    const secp256k1_hash_ctx *hash_ctx = secp256k1_get_hash_context(CTX);
+    const secp256k1_hash_ctx *hash_ctx = &CTX->hash_ctx;
 
     secp256k1_schnorrsig_sha256_tagged_aggregation(&sha_optimized);
     test_sha256_tag_midstate(hash_ctx, &sha_optimized, tag, sizeof(tag));
@@ -55,7 +55,7 @@ void test_schnorrsig_aggregate_internal(void) {
     CHECK(secp256k1_schnorrsig_aggverify(CTX, pubkeys, msgs32, n_initial, aggsig, aggsig_len));
     /* Aggregate the remaining n_new many signatures to the already existing ones */
     aggsig_len = sizeof(aggsig);
-    secp256k1_schnorrsig_inc_aggregate(CTX, aggsig, &aggsig_len, pubkeys, msgs32, &sigs64[n_initial*64], n_initial, n_new);
+    CHECK(secp256k1_schnorrsig_inc_aggregate(CTX, aggsig, &aggsig_len, pubkeys, msgs32, &sigs64[n_initial*64], n_initial, n_new) == 1);
     /* Make sure that the aggregate signature verifies */
     CHECK(aggsig_len == 32*(n + 1));
     CHECK(secp256k1_schnorrsig_aggverify(CTX, pubkeys, msgs32, n, aggsig, aggsig_len));

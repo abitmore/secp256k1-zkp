@@ -29,7 +29,7 @@ static int nonce_function_ecdsa_adaptor_impl(const secp256k1_hash_ctx *hash_ctx,
 static void secp256k1_dleq_hash_point(const secp256k1_hash_ctx *hash_ctx, secp256k1_sha256 *sha, secp256k1_ge *p) {
     unsigned char buf[33];
 
-    secp256k1_eckey_pubkey_serialize33(p, buf);
+    secp256k1_ge_serialize33(p, buf);
     secp256k1_sha256_write(hash_ctx, sha, buf, 33);
 }
 
@@ -95,7 +95,7 @@ static void secp256k1_dleq_pair(const secp256k1_ecmult_gen_context *ecmult_gen_c
 static int secp256k1_dleq_prove(const secp256k1_context* ctx, secp256k1_scalar *s, secp256k1_scalar *e, const secp256k1_scalar *sk, secp256k1_ge *p1, secp256k1_ge *gen2, secp256k1_ge *p2, secp256k1_nonce_function_hardened_ecdsa_adaptor noncefp, void *ndata) {
     /* Note: r[2] and k are local to the DLEQ proof, and they differ from the
      * values with the same identifiers in main_impl.h. */
-    const secp256k1_hash_ctx *hash_ctx = secp256k1_get_hash_context(ctx);
+    const secp256k1_hash_ctx *hash_ctx = &ctx->hash_ctx;
     secp256k1_ge r[2];
     secp256k1_scalar k = { 0 };
     unsigned char sk32[32];
@@ -104,9 +104,9 @@ static int secp256k1_dleq_prove(const secp256k1_context* ctx, secp256k1_scalar *
     unsigned char p2_33[33];
     int ret;
 
-    secp256k1_eckey_pubkey_serialize33(gen2, gen2_33);
-    secp256k1_eckey_pubkey_serialize33(p1, p1_33);
-    secp256k1_eckey_pubkey_serialize33(p2, p2_33);
+    secp256k1_ge_serialize33(gen2, gen2_33);
+    secp256k1_ge_serialize33(p1, p1_33);
+    secp256k1_ge_serialize33(p2, p2_33);
 
     secp256k1_scalar_get_b32(sk32, sk);
 

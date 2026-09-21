@@ -63,7 +63,7 @@ static void test_bppp_generators_api(void) {
     /* Check that round-trip succeeded */
     CHECK(gens->n == gens_orig->n);
     for (len = 0; len < gens->n; len++) {
-        secp256k1_ge_eq_var(&gens->gens[len], &gens_orig->gens[len]);
+        CHECK(secp256k1_ge_eq_var(&gens->gens[len], &gens_orig->gens[len]));
     }
 
     /* Destroy (we allow destroying a NULL context, it's just a noop. like free().) */
@@ -106,7 +106,7 @@ static void test_bppp_generators_fixed(void) {
 }
 
 static void test_bppp_tagged_hash(void) {
-    const secp256k1_hash_ctx *hash_ctx = secp256k1_get_hash_context(CTX);
+    const secp256k1_hash_ctx *hash_ctx = &CTX->hash_ctx;
     unsigned char tag_data[] = {'B', 'u', 'l', 'l', 'e', 't', 'p', 'r', 'o', 'o', 'f', 's', '_', 'p', 'p', '/', 'v', '0', '/', 'c', 'o', 'm', 'm', 'i', 't', 'm', 'e', 'n', 't'};
     secp256k1_sha256 sha;
     secp256k1_sha256 sha_cached;
@@ -203,8 +203,8 @@ static void test_serialize_two_points_roundtrip(secp256k1_ge *X, secp256k1_ge *R
     secp256k1_bppp_serialize_points(buf, X, R);
     CHECK(secp256k1_bppp_parse_one_of_points(&X_tmp, buf, 0));
     CHECK(secp256k1_bppp_parse_one_of_points(&R_tmp, buf, 1));
-    secp256k1_ge_eq_var(X, &X_tmp);
-    secp256k1_ge_eq_var(R, &R_tmp);
+    CHECK(secp256k1_ge_eq_var(X, &X_tmp));
+    CHECK(secp256k1_ge_eq_var(R, &R_tmp));
 }
 
 static void test_serialize_two_points(void) {
@@ -282,7 +282,7 @@ static void secp256k1_norm_arg_commit_initial_data(
     const secp256k1_ge* commit
 ) {
     /* Commit to the initial public values */
-    const secp256k1_hash_ctx *hash_ctx = secp256k1_get_hash_context(CTX);
+    const secp256k1_hash_ctx *hash_ctx = &CTX->hash_ctx;
     unsigned char ser_commit[33], ser_scalar[32], ser_le64[8];
     size_t i;
     secp256k1_ge comm = *commit;
@@ -530,7 +530,7 @@ secp256k1_bppp_generators* bppp_generators_parse_regular(const unsigned char* da
     }
 
     while (n--) {
-        if (!secp256k1_eckey_pubkey_parse(&ret->gens[n], &data[33 * n], 33)) {
+        if (!secp256k1_ge_parse(&ret->gens[n], &data[33 * n], 33)) {
             free(ret->gens);
             free(ret);
             return NULL;

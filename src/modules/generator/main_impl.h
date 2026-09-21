@@ -211,7 +211,7 @@ static int secp256k1_generator_generate_internal(const secp256k1_context* ctx, s
     secp256k1_sha256 sha256;
     unsigned char b32[32];
     int ret = 1;
-    const secp256k1_hash_ctx *hash_ctx = secp256k1_get_hash_context(ctx);
+    const secp256k1_hash_ctx *hash_ctx = &ctx->hash_ctx;
 
     if (blind32) {
         secp256k1_scalar blind;
